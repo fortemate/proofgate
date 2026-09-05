@@ -29,10 +29,11 @@ one of only two outcomes:
 
 ## Why concurrency is the point
 
-This is not a sequential pipeline presented as a group of agents. A single
-`case.announced` event activates three `createAgent` participants. Each starts
-its own Mozaik `runLoop`, reads an independent evidence source, and publishes
-events while the other loops remain in flight.
+This is not a sequential pipeline presented as a group of agents. Three
+`createAgent` participants are created and joined first; a single
+`case.announced` event then starts an independent Mozaik `runLoop` on each one.
+Every loop reads its own evidence source and publishes events while the others
+remain in flight.
 
 ProofGate records every loop ID and reports `concurrencyObserved: true` only
 when all three distinct loops started before the first inference completed.
@@ -97,6 +98,7 @@ git clone https://github.com/fortemate/proofgate.git
 cd proofgate
 npm ci
 npm run check
+npm run build
 npm start
 ```
 
@@ -126,8 +128,9 @@ npm run demo -- ready --json
 | `blocked` | The experiment guardrail fails          | `BLOCKED`         |
 | `failure` | The policy evidence tool is unavailable | `BLOCKED`         |
 
-All scenarios are deterministic and synthetic. They need no model API key,
-production credential, registry access, or private Fortemate data.
+All scenarios are deterministic and synthetic. Running them needs no model API
+key, production credential, registry access at runtime, or private Fortemate
+data.
 
 ## Trust model
 
