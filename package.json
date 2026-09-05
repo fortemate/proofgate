@@ -1,0 +1,30 @@
+{
+  "name": "proofgate",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A public-safe release and experiment evidence control room built with Mozaik.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "npm run typecheck && npm test && npm run format:check",
+    "demo": "tsx src/main.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mozaik-ai/core": "4.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.1",
+    "prettier": "3.9.6",
+    "tsx": "4.23.13",
+    "typescript": "7.0.2",
+    "vitest": "5.0.0"
+  }
+}
