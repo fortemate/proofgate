@@ -131,9 +131,8 @@ production credential, registry access, or private Fortemate data.
 
 ## Trust model
 
-The language-model-shaped participants coordinate work, but they do not decide
-the gate. The attestor reads validated tool output rather than natural-language
-answers.
+The agent participants coordinate work, but they do not decide the gate. The
+attestor reads validated tool output rather than natural-language answers.
 
 Each observation contains its evidence role and the SHA-256 digest of the proof
 case. Invalid JSON, an unexpected schema, the wrong digest, a failed check, a
