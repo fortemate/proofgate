@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { digestProofCase, evidenceRoles } from '../src/domain.js';
-import { fixtures } from '../src/fixtures.js';
+import { fixtures, getFixture } from '../src/fixtures.js';
 import { runProofGate } from '../src/proofgate.js';
 
 describe('ProofGate MVP', () => {
@@ -51,5 +51,9 @@ describe('ProofGate MVP', () => {
     };
 
     expect(digestProofCase(changedDelay)).toBe(digestProofCase(fixtures.ready));
+  });
+
+  it('rejects inherited object properties as fixture names', () => {
+    expect(() => getFixture('toString')).toThrow('Unknown fixture "toString"');
   });
 });

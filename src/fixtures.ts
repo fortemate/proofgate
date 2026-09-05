@@ -58,11 +58,10 @@ export const fixtures = { ready, blocked, failure } as const;
 export type FixtureName = keyof typeof fixtures;
 
 export function getFixture(name: string): ProofCase {
-  const fixture = fixtures[name as FixtureName];
-  if (!fixture) {
+  if (!Object.hasOwn(fixtures, name)) {
     throw new Error(
       `Unknown fixture "${name}". Choose one of: ${Object.keys(fixtures).join(', ')}.`,
     );
   }
-  return fixture;
+  return fixtures[name as FixtureName];
 }
