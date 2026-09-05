@@ -53,6 +53,16 @@ npm run demo -- blocked
 npm run demo -- failure
 ```
 
+Start the visual Control Room at `http://127.0.0.1:4173`:
+
+```bash
+npm start
+```
+
+The local UI can run all three proof cases, compare evidence lanes, and inspect
+the redacted event ledger. Its HTTP server binds to localhost by default and
+exposes only synthetic scenarios.
+
 Use `--json` to inspect the redacted event timeline and the three loop IDs:
 
 ```bash

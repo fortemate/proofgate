@@ -4,6 +4,8 @@ import { digestProofCase, evidenceRoles } from '../src/domain.js';
 import { fixtures, getFixture } from '../src/fixtures.js';
 import { runProofGate } from '../src/proofgate.js';
 
+process.env.MOZAIK_API_KEY = '';
+
 describe('ProofGate MVP', () => {
   it('returns READY_FOR_HUMAN only when every evidence source passes', async () => {
     const result = await runProofGate(fixtures.ready);

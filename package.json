@@ -12,8 +12,10 @@
     "build": "tsc -p tsconfig.build.json",
     "check": "npm run typecheck && npm test && npm run format:check",
     "demo": "tsx src/main.ts",
+    "dev": "tsx watch src/server.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "start": "tsx src/server.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
