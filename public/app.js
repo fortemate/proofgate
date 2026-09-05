@@ -72,11 +72,9 @@ function showPendingAgents() {
 
 function createAgentCard(role, observation, loopId, failure) {
   const card = document.createElement('article');
-  const visualStatus = observation
-    ? observation.status.toLowerCase()
-    : failure
-      ? 'fail'
-      : 'working';
+  let visualStatus = 'working';
+  if (observation) visualStatus = observation.status.toLowerCase();
+  else if (failure) visualStatus = 'fail';
   card.className = `agent-card ${visualStatus}`;
 
   const ordinal = String(roles.indexOf(role) + 1).padStart(2, '0');

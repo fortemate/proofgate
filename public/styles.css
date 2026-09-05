@@ -230,6 +230,21 @@ h2 {
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-top: 28px;
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .scenario {
@@ -376,7 +391,7 @@ h2 {
   border: 1px solid rgb(255 116 110 / 24%);
   border-radius: 8px;
   color: #ffaaa6;
-  background: rgb(255 116 110 / 7%);
+  background: #231f2b;
 }
 
 .reasons p {
