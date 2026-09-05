@@ -593,7 +593,11 @@ footer {
   }
 
   .timeline li {
-    grid-template-columns: 30px 78px minmax(120px, 1fr);
+    grid-template-columns: 30px 78px minmax(0, 1fr);
+  }
+
+  .timeline code {
+    overflow-wrap: anywhere;
   }
 
   .timeline li > small {
