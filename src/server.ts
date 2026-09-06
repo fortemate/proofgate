@@ -36,6 +36,16 @@ class RunCapacity {
   public release(): void {
     this.activeRuns -= 1;
   }
+
+  public snapshot(): {
+    readonly activeRuns: number;
+    readonly maximumConcurrentRuns: number;
+  } {
+    return {
+      activeRuns: this.activeRuns,
+      maximumConcurrentRuns: this.maximumConcurrentRuns,
+    };
+  }
 }
 
 const assets = new Map([
@@ -156,7 +166,11 @@ async function handleRequest(
   const url = new URL(request.url ?? '/', 'http://localhost');
 
   if (request.method === 'GET' && url.pathname === '/api/health') {
-    sendJson(response, 200, { status: 'ok', mode: 'synthetic-read-only' });
+    sendJson(response, 200, {
+      status: 'ok',
+      mode: 'synthetic-read-only',
+      ...runCapacity.snapshot(),
+    });
     return;
   }
 
@@ -202,7 +216,7 @@ function parsePort(value: string | undefined): number {
 }
 
 function parseMaximumConcurrentRuns(value: string | undefined): number {
-  if (!value) return defaultMaximumConcurrentRuns;
+  if (value === undefined) return defaultMaximumConcurrentRuns;
   const maximumConcurrentRuns = Number(value);
   if (!Number.isInteger(maximumConcurrentRuns) || maximumConcurrentRuns < 1) {
     throw new Error('MAX_CONCURRENT_RUNS must be a positive integer');

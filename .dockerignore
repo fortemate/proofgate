@@ -1,8 +1,16 @@
 .git
 .github
 .DS_Store
+.npmrc
+.cloudflared
+.cloudflared/**
 .env
 .env.*
+*.pem
+*.key
+*.db
+*.sqlite
+*.sqlite3
 node_modules
 dist
 coverage

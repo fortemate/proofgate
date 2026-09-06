@@ -33,6 +33,16 @@ async function startServer(
   return `http://127.0.0.1:${address.port}`;
 }
 
+async function waitForActiveRuns(origin: string, expected: number) {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const response = await fetch(`${origin}/api/health`);
+    const health = (await response.json()) as { activeRuns: number };
+    if (health.activeRuns === expected) return;
+    await new Promise((resolve) => setTimeout(resolve, 2));
+  }
+  throw new Error(`activeRuns did not reach ${expected}`);
+}
+
 describe('ProofGate Control Room server', () => {
   it('serves the control room with restrictive browser headers', async () => {
     const origin = await startServer();
@@ -88,7 +98,7 @@ describe('ProofGate Control Room server', () => {
       body: JSON.stringify({ fixture: 'ready' }),
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await waitForActiveRuns(origin, 1);
     const rejectedRun = await fetch(`${origin}/api/runs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

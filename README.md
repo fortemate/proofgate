@@ -144,7 +144,8 @@ Build and start the hardened, non-root container:
 
 ```bash
 docker compose up --build --detach
-curl --fail http://127.0.0.1:4173/api/health
+curl --fail --retry 10 --retry-all-errors --retry-delay 1 \
+  http://127.0.0.1:4173/api/health
 ```
 
 Create a **named** Cloudflare Tunnel route from the chosen public hostname to
