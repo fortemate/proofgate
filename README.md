@@ -7,6 +7,8 @@
 A read-only release and experiment control room built with concurrent
 [Mozaik](https://github.com/jigjoy-ai/mozaik) agents.
 
+[**Watch the 1:55 captioned demo**](https://youtu.be/THanAQS0FvY)
+
 [![CI](https://github.com/fortemate/proofgate/actions/workflows/ci.yml/badge.svg)](https://github.com/fortemate/proofgate/actions/workflows/ci.yml)
 ![Node.js](https://img.shields.io/badge/Node.js-20%2B-5FA04E)
 ![Mozaik](https://img.shields.io/badge/Mozaik-4.0.5-547DE8)
@@ -27,9 +29,9 @@ one of only two outcomes:
 > ProofGate never deploys, rolls back, changes a flag, or writes to production.
 > It prepares evidence for a human decision.
 
-![ProofGate returning READY_FOR_HUMAN after three concurrent evidence checks](docs/assets/control-room-ready.png)
+[![ProofGate returning READY_FOR_HUMAN after three concurrent evidence checks](docs/assets/control-room-ready.png)](https://youtu.be/THanAQS0FvY)
 
-<p align="center"><em>Three independent evidence lanes, one case digest, and a human-owned verdict.</em></p>
+<p align="center"><em>Select the screenshot to watch three independent evidence lanes produce one human-owned verdict.</em></p>
 
 ## Why concurrency is the point
 
@@ -92,6 +94,13 @@ sequenceDiagram
     Ledger->>Attestor: validated typed evidence
     Attestor-->>Human: BLOCKED or READY_FOR_HUMAN
 ```
+
+## Video walkthrough
+
+The [1:55 captioned demo](https://youtu.be/THanAQS0FvY) shows all three
+deterministic scenarios, the interleaved event ledger, concurrent Mozaik agent
+traces, and the human-only decision boundary. The published English subtitle
+track is also available as [`docs/demo-captions.srt`](docs/demo-captions.srt).
 
 ## Judge quick start
 
@@ -215,12 +224,6 @@ real operational thresholds.
 A future connector must remain read-only, redact its source payload, and convert
 it into the small evidence contract before the attestor sees it. Private
 Fortemate adapters and policies belong outside this public hackathon repository.
-
-## Recording the demo
-
-The recommended shot list, screenshot filenames, and an English narration are
-in [docs/demo-script.md](docs/demo-script.md). The demo is designed to fit in
-about two minutes.
 
 ## License
 

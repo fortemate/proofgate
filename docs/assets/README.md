@@ -1,6 +1,7 @@
 # Demo assets
 
-This directory is reserved for public-safe ProofGate submission images.
+This directory contains the public-safe images used by the ProofGate README and
+hackathon submission.
 
 Expected filenames:
 
@@ -8,6 +9,7 @@ Expected filenames:
 - `control-room-blocked.png`
 - `event-ledger.png`
 - `mozaik-cloud-concurrency.png`
-- `mozaik-cloud-agent-details.png` (optional)
+- `mozaik-cloud-agent-details.png`
 
-See [`../demo-script.md`](../demo-script.md) for framing and redaction guidance.
+Keep every asset free of credentials, project keys, email addresses, private
+repository names, and unrelated browser chrome.
