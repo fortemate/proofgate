@@ -126,6 +126,41 @@ npm run demo -- blocked
 npm run demo -- failure
 ```
 
+## Public demo deployment
+
+The Control Room can run as a public, synthetic-only demo behind a
+[named Cloudflare Tunnel](https://developers.cloudflare.com/tunnel/setup/).
+The tunnel provides the public HTTPS hostname while the origin remains bound to
+the homelab loopback interface; no router port needs to be opened.
+
+```mermaid
+flowchart LR
+    J[Judge browser] -->|HTTPS| C[Cloudflare edge]
+    C -->|named Tunnel| T[cloudflared]
+    T -->|http://127.0.0.1:4173| P[ProofGate container]
+```
+
+Build and start the hardened, non-root container:
+
+```bash
+docker compose up --build --detach
+curl --fail --retry 10 --retry-all-errors --retry-delay 1 \
+  http://127.0.0.1:4173/api/health
+```
+
+Create a **named** Cloudflare Tunnel route from the chosen public hostname to
+`http://localhost:4173`. Keep the application publicly reachable for judges;
+do not place Cloudflare Access authentication in front of the submitted demo.
+
+The container accepts at most two evaluations at once by default. Additional
+requests receive `429 Too Many Requests` instead of building an unbounded
+queue. Override `MAX_CONCURRENT_RUNS` only after testing the homelab capacity.
+
+> [!CAUTION]
+> Do not provide `MOZAIK_API_KEY`, pairing credentials, production connectors,
+> or private Fortemate data to the public deployment. Mozaik Cloud traces used
+> for judging remain available in the recorded demo and screenshots.
+
 Add `--json` to inspect the redacted event timeline, evidence contract, case
 digest, and three loop IDs:
 
