@@ -16,6 +16,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "start": "tsx src/server.ts",
+    "start:prod": "node dist/server.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
