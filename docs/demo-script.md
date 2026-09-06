@@ -61,9 +61,11 @@ Place final images in `docs/assets/` with these exact names:
    cards, the case digest, and `overlap verified` visible.
 2. `control-room-blocked.png` — the `BLOCKED` result with the experiment reason
    visible.
-3. `mozaik-cloud-concurrency.png` — the Cloud Agents view showing three traces
-   from one fresh run, with any account details or keys cropped out.
-4. `event-ledger.png` — optional closer crop of the expanded interleaved ledger.
+3. `event-ledger.png` — a closer crop of the expanded interleaved ledger.
+4. `mozaik-cloud-concurrency.png` — the Cloud Agents view showing all three live
+   agent definitions and their loops, with any account details or keys cropped out.
+5. `mozaik-cloud-agent-details.png` — an optional Cloud detail view showing one
+   agent's restricted instruction, tool, and synthetic context.
 
 Prefer PNG or WebP, use a 16:9 aspect ratio where practical, and keep each image
 below roughly 1.5 MB. Do not include credentials, project keys, email addresses,

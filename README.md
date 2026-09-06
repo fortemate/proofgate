@@ -27,6 +27,10 @@ one of only two outcomes:
 > ProofGate never deploys, rolls back, changes a flag, or writes to production.
 > It prepares evidence for a human decision.
 
+![ProofGate returning READY_FOR_HUMAN after three concurrent evidence checks](docs/assets/control-room-ready.png)
+
+<p align="center"><em>Three independent evidence lanes, one case digest, and a human-owned verdict.</em></p>
+
 ## Why concurrency is the point
 
 This is not a sequential pipeline presented as a group of agents. Three
@@ -131,6 +135,27 @@ npm run demo -- ready --json
 All scenarios are deterministic and synthetic. Running them needs no model API
 key, production credential, registry access at runtime, or private Fortemate
 data.
+
+## Visual proof
+
+| Fail closed on unsafe evidence                                                                                      | Observe all three agents in Mozaik Cloud                                                             |
+| ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| ![ProofGate blocking a release candidate after an experiment guardrail fails](docs/assets/control-room-blocked.png) | ![Three ProofGate evidence agents visible in Mozaik Cloud](docs/assets/mozaik-cloud-concurrency.png) |
+
+<details>
+<summary><strong>Inspect the event ledger and one agent trace</strong></summary>
+
+The ledger preserves the interleaved lifecycle events and distinct loop IDs used
+to verify overlap:
+
+![ProofGate event ledger with interleaved events from three agents](docs/assets/event-ledger.png)
+
+Mozaik Cloud exposes each agent's constrained instruction, tool, and synthetic
+context for debugging:
+
+![Mozaik Cloud details for the policy evidence agent](docs/assets/mozaik-cloud-agent-details.png)
+
+</details>
 
 ## Trust model
 
