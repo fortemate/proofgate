@@ -5,13 +5,13 @@ FROM --platform=$BUILDPLATFORM node:26-trixie-slim AS build
 WORKDIR /build
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 COPY tsconfig.json tsconfig.build.json ./
 COPY src ./src
 COPY public ./public
 RUN npm run build
-RUN npm prune --omit=dev
+RUN npm prune --omit=dev --ignore-scripts
 
 FROM node:26-trixie-slim AS runtime
 

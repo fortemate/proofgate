@@ -108,6 +108,46 @@ async function serveAsset(
   return true;
 }
 
+async function handleRunRequest(
+  request: IncomingMessage,
+  response: ServerResponse,
+  runCapacity: RunCapacity,
+): Promise<void> {
+  if (!request.headers['content-type']?.startsWith('application/json')) {
+    sendJson(response, 415, {
+      error: 'content-type must be application/json',
+    });
+    return;
+  }
+
+  try {
+    const body = (await readJsonBody(request)) as { fixture?: unknown };
+    if (!body || typeof body !== 'object' || typeof body.fixture !== 'string') {
+      throw new Error('fixture must be a string');
+    }
+
+    const fixture = getFixture(body.fixture);
+    if (!runCapacity.tryAcquire()) {
+      response.setHeader('Retry-After', '1');
+      sendJson(response, 429, {
+        error: 'too many evaluations in progress',
+      });
+      return;
+    }
+
+    try {
+      const result = await runProofGate(fixture);
+      sendJson(response, 200, result);
+    } finally {
+      runCapacity.release();
+    }
+  } catch (error) {
+    sendJson(response, 400, {
+      error: error instanceof Error ? error.message : 'invalid request',
+    });
+  }
+}
+
 async function handleRequest(
   request: IncomingMessage,
   response: ServerResponse,
@@ -121,42 +161,7 @@ async function handleRequest(
   }
 
   if (request.method === 'POST' && url.pathname === '/api/runs') {
-    if (!request.headers['content-type']?.startsWith('application/json')) {
-      sendJson(response, 415, {
-        error: 'content-type must be application/json',
-      });
-      return;
-    }
-
-    try {
-      const body = (await readJsonBody(request)) as { fixture?: unknown };
-      if (
-        !body ||
-        typeof body !== 'object' ||
-        typeof body.fixture !== 'string'
-      ) {
-        throw new Error('fixture must be a string');
-      }
-      const fixture = getFixture(body.fixture);
-      if (!runCapacity.tryAcquire()) {
-        response.setHeader('Retry-After', '1');
-        sendJson(response, 429, {
-          error: 'too many evaluations in progress',
-        });
-        return;
-      }
-
-      try {
-        const result = await runProofGate(fixture);
-        sendJson(response, 200, result);
-      } finally {
-        runCapacity.release();
-      }
-    } catch (error) {
-      sendJson(response, 400, {
-        error: error instanceof Error ? error.message : 'invalid request',
-      });
-    }
+    await handleRunRequest(request, response, runCapacity);
     return;
   }
 
@@ -205,6 +210,32 @@ function parseMaximumConcurrentRuns(value: string | undefined): number {
   return maximumConcurrentRuns;
 }
 
+function installShutdownHandlers(
+  server: ReturnType<typeof createControlRoomServer>,
+): void {
+  let shuttingDown = false;
+  const shutdown = (signal: NodeJS.Signals): void => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`Received ${signal}; closing the Control Room.`);
+
+    const deadline = setTimeout(() => {
+      console.error('Graceful shutdown timed out.');
+      process.exit(1);
+    }, 5_000);
+    deadline.unref();
+
+    server.close((error) => {
+      clearTimeout(deadline);
+      if (error) console.error(error);
+      process.exit(error ? 1 : 0);
+    });
+  };
+
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
+  process.once('SIGINT', () => shutdown('SIGINT'));
+}
+
 const entrypoint = process.argv[1]
   ? pathToFileURL(resolve(process.argv[1])).href
   : undefined;
@@ -216,6 +247,7 @@ if (import.meta.url === entrypoint) {
     process.env.MAX_CONCURRENT_RUNS,
   );
   const server = createControlRoomServer({ maximumConcurrentRuns });
+  installShutdownHandlers(server);
   server.listen(port, host, () => {
     console.log(`ProofGate Control Room: http://${host}:${port}`);
     console.log(`Concurrent evaluation limit: ${maximumConcurrentRuns}`);
