@@ -29,6 +29,10 @@ information. The suggested recording is approximately **100–120 seconds**.
 
 ## Suggested English narration
 
+A timed subtitle track for the 1:55 submission recording is available in
+[`demo-captions.srt`](demo-captions.srt). It communicates the same story without
+requiring spoken narration.
+
 > Releases and experiments often depend on evidence scattered across several
 > systems. ProofGate turns that evidence into one explainable, human-owned
 > decision point.

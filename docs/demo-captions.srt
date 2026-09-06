@@ -1,0 +1,38 @@
+1
+00:00:00,000 --> 00:00:08,500
+ProofGate is a read-only release and experiment control room.
+
+2
+00:00:08,500 --> 00:00:18,000
+Three Mozaik agents inspect build integrity, release policy,
+and experiment safety concurrently.
+
+3
+00:00:18,000 --> 00:00:35,500
+All checks pass. Distinct loop IDs and the event ledger prove overlap,
+so the verdict is READY_FOR_HUMAN.
+
+4
+00:00:36,000 --> 00:00:56,000
+A failed experiment guardrail blocks the candidate.
+The verdict is deterministic and explainable.
+
+5
+00:00:58,000 --> 00:01:22,000
+Missing evidence also fails closed: the policy agent reports an error,
+while the other agents still complete.
+
+6
+00:01:24,000 --> 00:01:39,000
+Mozaik Cloud shows all three evidence agents active together
+and exposes their loops for observability.
+
+7
+00:01:43,000 --> 00:01:49,000
+Each agent has a constrained instruction, one synthetic evidence tool,
+and inspectable execution context.
+
+8
+00:01:49,000 --> 00:01:55,000
+ProofGate provides evidence before action.
+It never releases automatically; a person decides.
