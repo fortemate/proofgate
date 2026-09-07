@@ -12,6 +12,41 @@ import { runProofGate } from './proofgate.js';
 
 const publicDirectory = fileURLToPath(new URL('../public/', import.meta.url));
 const maximumBodyBytes = 4_096;
+const defaultMaximumConcurrentRuns = 2;
+
+export interface ControlRoomServerOptions {
+  readonly maximumConcurrentRuns?: number;
+}
+
+class RunCapacity {
+  private activeRuns = 0;
+
+  public constructor(private readonly maximumConcurrentRuns: number) {
+    if (!Number.isInteger(maximumConcurrentRuns) || maximumConcurrentRuns < 1) {
+      throw new Error('maximumConcurrentRuns must be a positive integer');
+    }
+  }
+
+  public tryAcquire(): boolean {
+    if (this.activeRuns >= this.maximumConcurrentRuns) return false;
+    this.activeRuns += 1;
+    return true;
+  }
+
+  public release(): void {
+    this.activeRuns -= 1;
+  }
+
+  public snapshot(): {
+    readonly activeRuns: number;
+    readonly maximumConcurrentRuns: number;
+  } {
+    return {
+      activeRuns: this.activeRuns,
+      maximumConcurrentRuns: this.maximumConcurrentRuns,
+    };
+  }
+}
 
 const assets = new Map([
   ['/', { file: 'index.html', contentType: 'text/html; charset=utf-8' }],
@@ -83,41 +118,64 @@ async function serveAsset(
   return true;
 }
 
-async function handleRequest(
+async function handleRunRequest(
   request: IncomingMessage,
   response: ServerResponse,
+  runCapacity: RunCapacity,
 ): Promise<void> {
-  const url = new URL(request.url ?? '/', 'http://localhost');
-
-  if (request.method === 'GET' && url.pathname === '/api/health') {
-    sendJson(response, 200, { status: 'ok', mode: 'synthetic-read-only' });
+  if (!request.headers['content-type']?.startsWith('application/json')) {
+    sendJson(response, 415, {
+      error: 'content-type must be application/json',
+    });
     return;
   }
 
-  if (request.method === 'POST' && url.pathname === '/api/runs') {
-    if (!request.headers['content-type']?.startsWith('application/json')) {
-      sendJson(response, 415, {
-        error: 'content-type must be application/json',
+  try {
+    const body = (await readJsonBody(request)) as { fixture?: unknown };
+    if (!body || typeof body !== 'object' || typeof body.fixture !== 'string') {
+      throw new Error('fixture must be a string');
+    }
+
+    const fixture = getFixture(body.fixture);
+    if (!runCapacity.tryAcquire()) {
+      response.setHeader('Retry-After', '1');
+      sendJson(response, 429, {
+        error: 'too many evaluations in progress',
       });
       return;
     }
 
     try {
-      const body = (await readJsonBody(request)) as { fixture?: unknown };
-      if (
-        !body ||
-        typeof body !== 'object' ||
-        typeof body.fixture !== 'string'
-      ) {
-        throw new Error('fixture must be a string');
-      }
-      const result = await runProofGate(getFixture(body.fixture));
+      const result = await runProofGate(fixture);
       sendJson(response, 200, result);
-    } catch (error) {
-      sendJson(response, 400, {
-        error: error instanceof Error ? error.message : 'invalid request',
-      });
+    } finally {
+      runCapacity.release();
     }
+  } catch (error) {
+    sendJson(response, 400, {
+      error: error instanceof Error ? error.message : 'invalid request',
+    });
+  }
+}
+
+async function handleRequest(
+  request: IncomingMessage,
+  response: ServerResponse,
+  runCapacity: RunCapacity,
+): Promise<void> {
+  const url = new URL(request.url ?? '/', 'http://localhost');
+
+  if (request.method === 'GET' && url.pathname === '/api/health') {
+    sendJson(response, 200, {
+      status: 'ok',
+      mode: 'synthetic-read-only',
+      ...runCapacity.snapshot(),
+    });
+    return;
+  }
+
+  if (request.method === 'POST' && url.pathname === '/api/runs') {
+    await handleRunRequest(request, response, runCapacity);
     return;
   }
 
@@ -128,16 +186,23 @@ async function handleRequest(
   sendJson(response, 404, { error: 'not found' });
 }
 
-export function createControlRoomServer() {
+export function createControlRoomServer(
+  options: ControlRoomServerOptions = {},
+) {
+  const runCapacity = new RunCapacity(
+    options.maximumConcurrentRuns ?? defaultMaximumConcurrentRuns,
+  );
   return createServer((request, response) => {
-    void handleRequest(request, response).catch((error: unknown) => {
-      console.error(error);
-      if (!response.headersSent) {
-        sendJson(response, 500, { error: 'internal server error' });
-      } else {
-        response.destroy();
-      }
-    });
+    void handleRequest(request, response, runCapacity).catch(
+      (error: unknown) => {
+        console.error(error);
+        if (!response.headersSent) {
+          sendJson(response, 500, { error: 'internal server error' });
+        } else {
+          response.destroy();
+        }
+      },
+    );
   });
 }
 
@@ -150,6 +215,41 @@ function parsePort(value: string | undefined): number {
   return port;
 }
 
+function parseMaximumConcurrentRuns(value: string | undefined): number {
+  if (value === undefined) return defaultMaximumConcurrentRuns;
+  const maximumConcurrentRuns = Number(value);
+  if (!Number.isInteger(maximumConcurrentRuns) || maximumConcurrentRuns < 1) {
+    throw new Error('MAX_CONCURRENT_RUNS must be a positive integer');
+  }
+  return maximumConcurrentRuns;
+}
+
+function installShutdownHandlers(
+  server: ReturnType<typeof createControlRoomServer>,
+): void {
+  let shuttingDown = false;
+  const shutdown = (signal: NodeJS.Signals): void => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`Received ${signal}; closing the Control Room.`);
+
+    const deadline = setTimeout(() => {
+      console.error('Graceful shutdown timed out.');
+      process.exit(1);
+    }, 5_000);
+    deadline.unref();
+
+    server.close((error) => {
+      clearTimeout(deadline);
+      if (error) console.error(error);
+      process.exit(error ? 1 : 0);
+    });
+  };
+
+  process.once('SIGTERM', () => shutdown('SIGTERM'));
+  process.once('SIGINT', () => shutdown('SIGINT'));
+}
+
 const entrypoint = process.argv[1]
   ? pathToFileURL(resolve(process.argv[1])).href
   : undefined;
@@ -157,9 +257,14 @@ const entrypoint = process.argv[1]
 if (import.meta.url === entrypoint) {
   const host = process.env.HOST ?? '127.0.0.1';
   const port = parsePort(process.env.PORT);
-  const server = createControlRoomServer();
+  const maximumConcurrentRuns = parseMaximumConcurrentRuns(
+    process.env.MAX_CONCURRENT_RUNS,
+  );
+  const server = createControlRoomServer({ maximumConcurrentRuns });
+  installShutdownHandlers(server);
   server.listen(port, host, () => {
     console.log(`ProofGate Control Room: http://${host}:${port}`);
+    console.log(`Concurrent evaluation limit: ${maximumConcurrentRuns}`);
     console.log(
       'Synthetic evidence only. No production actions are available.',
     );

@@ -1,0 +1,27 @@
+services:
+  proofgate:
+    build:
+      context: .
+    image: proofgate:local
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4173
+      MAX_CONCURRENT_RUNS: 2
+    ports:
+      - '127.0.0.1:4173:4173'
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
