@@ -24,7 +24,7 @@
     "@mozaik-ai/core": "4.1.0"
   },
   "devDependencies": {
-    "@types/node": "26.6.5",
+    "@types/node": "26.6.6",
     "prettier": "3.9.10",
     "tsx": "4.23.15",
     "typescript": "7.0.2",
