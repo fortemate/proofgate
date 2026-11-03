@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@mozaik-ai/core": "4.1.0"
+    "@mozaik-ai/core": "4.2.0"
   },
   "devDependencies": {
     "@types/node": "26.6.5",
