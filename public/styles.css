@@ -257,7 +257,13 @@ h2 {
   text-align: left;
   background: rgb(8 11 17 / 45%);
   cursor: pointer;
-  transition: 150ms ease;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    outline-color 150ms ease,
+    outline-width 150ms ease,
+    transform 150ms ease;
 }
 
 .scenario:hover,
@@ -270,6 +276,12 @@ h2 {
   border-color: var(--blue-deep);
   background: rgb(70 111 218 / 12%);
   box-shadow: inset 0 0 0 1px rgb(111 156 255 / 12%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario {
+    transition: none;
+  }
 }
 
 .scenario-code {
