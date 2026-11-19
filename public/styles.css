@@ -278,6 +278,12 @@ h2 {
   box-shadow: inset 0 0 0 1px rgb(111 156 255 / 12%);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .scenario {
+    transition: none;
+  }
+}
+
 .scenario-code {
   color: var(--faint);
   font-size: 11px;
